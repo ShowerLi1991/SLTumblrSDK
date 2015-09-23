@@ -49,7 +49,7 @@ typedef void (^SLTumblrCallback)(id result, NSError *error);
 - (void)blogLikes:(NSString *)blogName parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
 
 // 返回图片地址, 可选size: 16, 24, 30, 40, 48, 64, 96, 128, 512
-- (NSString *)avatarURLString:(NSString *)blogName size:(NSUInteger)size;
+- (NSString *)avatarURLStringWithBlogName:(NSString *)blogName size:(NSUInteger)size;
 - (void)worldTagged:(NSString *)tag parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
 
 

@@ -105,7 +105,7 @@
 }
 
 // 返回图片地址
-- (NSString *)avatarURLString:(NSString *)blogName size:(NSUInteger)size {
+- (NSString *)avatarURLStringWithBlogName:(NSString *)blogName size:(NSUInteger)size {
     NSString * urlString = [NSString stringWithFormat:@"https://api.tumblr.com/v2/blog/%@.tumblr.com/avatar/%@", blogName, @(size)];
     return urlString;
 }
