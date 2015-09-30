@@ -18,6 +18,6 @@
 
 
 // 返回  Authorization 字符串
-+ (NSString *)authorizationWithURLString:(NSString *)URLString HTTPMethod:(NSString *)method postDict:(NSDictionary *)xauthParameter;
++ (NSString *)authorizationWithURLString:(NSString *)URLString HTTPMethod:(NSString *)method postDicts:(NSDictionary *)postDicts authDicts:xauthParameter;
 
 @end

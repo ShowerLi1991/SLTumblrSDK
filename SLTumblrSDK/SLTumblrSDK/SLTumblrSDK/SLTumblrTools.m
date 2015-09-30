@@ -37,12 +37,12 @@
  */
 + (void)GETWithURLString:(NSString *)URLString parametersDict:(NSDictionary *)parametersDict authenticationType:(AuthenticationType)type callback:(SLTumblrCallback)callback {
     NSString * newURLString = [SLTumblrTools URLStringWithSortedQueryByURLString:URLString parametersDict:parametersDict];
-    [[SLTumblrTools sharedSLTumblrTools] getRequestWithURLString:newURLString parametersDict:parametersDict authenticationType:type postDict:nil callback:callback];
+    [[SLTumblrTools sharedSLTumblrTools] getRequestWithURLString:newURLString parametersDict:parametersDict authenticationType:type callback:callback];
 }
 
 /// POST访问方法
 + (void)POSTWithURLString:(NSString *)URLString parametersDict:(NSDictionary *)parametersDict callback:(SLTumblrCallback)callback {
-    [[SLTumblrTools sharedSLTumblrTools] postRequestWithURLString:URLString parametersDict:parametersDict postDict:nil callback:callback];
+    [[SLTumblrTools sharedSLTumblrTools] postRequestWithURLString:URLString parametersDict:parametersDict callback:callback];
 }
 
 
@@ -53,7 +53,7 @@
 
 
 /// getRequest方法 url附带参数
-- (void)getRequestWithURLString:(NSString *)URLString parametersDict:(NSDictionary *)parametersDict authenticationType:(AuthenticationType)type postDict:(NSDictionary *)postParameters  callback:(SLTumblrCallback)callback {
+- (void)getRequestWithURLString:(NSString *)URLString parametersDict:(NSDictionary *)parametersDict authenticationType:(AuthenticationType)type callback:(SLTumblrCallback)callback {
     
     NSURL *URL = [NSURL URLWithString:URLString];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
@@ -61,7 +61,7 @@
     [request setValue:@"iPhone AppleWebKit" forHTTPHeaderField:@"User-Agent"];
 
     if (type == OAuthType) {
-        NSString * authorization = [SLTumblrOAuth authorizationWithURLString:URLString HTTPMethod:request.HTTPMethod postDict:postParameters];
+        NSString * authorization = [SLTumblrOAuth authorizationWithURLString:URLString HTTPMethod:request.HTTPMethod postDicts:nil authDicts:nil];
         [request setValue:authorization forHTTPHeaderField:@"Authorization"];
     }
 
@@ -69,25 +69,20 @@
 }
 
 /// postRequest方法 url附带参数
-- (void)postRequestWithURLString:(NSString *)URLString parametersDict:(NSDictionary *)parametersDict postDict:(NSDictionary *)postParameters callback:(SLTumblrCallback)callback {
-    
-    NSMutableDictionary * parametersDictM = [NSMutableDictionary dictionaryWithDictionary:parametersDict];
-    parametersDictM[@"api_key"] = [SLTumblrSDK sharedSLTumblrSDK].OAuthConsumerKey;
+- (void)postRequestWithURLString:(NSString *)URLString parametersDict:(NSDictionary *)parametersDict callback:(SLTumblrCallback)callback {
     
     NSURL *URL = [NSURL URLWithString:URLString];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
     request.HTTPMethod = @"POST";
     
-    if (postParameters == nil) {
-        request.HTTPBody = [[SLTumblrTools queryBySortedKeysWithDictionary:parametersDictM] dataUsingEncoding:NSUTF8StringEncoding];
-    } else {
-        request.HTTPBody = [[SLTumblrTools queryBySortedKeysWithDictionary:postParameters] dataUsingEncoding:NSUTF8StringEncoding];
-    }
-    
+    NSMutableDictionary * parametersDictM = [NSMutableDictionary dictionaryWithDictionary:parametersDict];
+    parametersDictM[@"api_key"] = [SLTumblrSDK sharedSLTumblrSDK].OAuthConsumerKey;
     NSString * queryString = [SLTumblrTools queryBySortedKeysWithDictionary:parametersDictM];
-    NSString * URLQueryString = [[URLString stringByAppendingConsumerKey] stringByAppendingFormat:@"&%@", queryString];
-    NSString * authorization = [SLTumblrOAuth authorizationWithURLString:URLQueryString HTTPMethod:request.HTTPMethod postDict:postParameters];
     
+    request.HTTPBody = [queryString dataUsingEncoding:NSUTF8StringEncoding];
+    
+    NSString * authorization = [SLTumblrOAuth authorizationWithURLString:URLString HTTPMethod:request.HTTPMethod postDicts:parametersDictM authDicts:nil];
+    NSLog(@"%@", authorization);
     [request setValue:authorization forHTTPHeaderField:@"Authorization"];
     [request setValue:@"iPhone AppleWebKit" forHTTPHeaderField:@"User-Agent"];
     
@@ -150,7 +145,13 @@
     NSArray * components = [query componentsSeparatedByString:@"&"];
     for (NSString * component in components) {
         NSArray * keyValuePair = [component componentsSeparatedByString:@"="];
-        dict[keyValuePair[0]] = keyValuePair[1];
+        if (keyValuePair.count == 2) {
+            NSString * key = keyValuePair[0];
+            NSString * value = keyValuePair[1];
+            dict[key] = value;
+        } else {
+            return nil;
+        }
     }
     return dict.copy;
 }
@@ -159,9 +160,11 @@
 + (NSString *)queryBySortedKeysWithDictionary:(NSDictionary *)dict {
     NSMutableArray * parameters = [NSMutableArray array];
     
-    for (NSString * key in [[dict allKeys] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)]) {
+    for (id key in [[dict allKeys] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)]) {
+
+        NSString * value = [NSString stringWithFormat:@"%@", dict[key]];
         
-        [parameters addObject:[NSString stringWithFormat:@"%@=%@", key, dict[key]]];
+        [parameters addObject:[NSString stringWithFormat:@"%@=%@", [key stringByAddingOAuthPercentEncodingWithEscapesCharacters], [value stringByAddingOAuthPercentEncodingWithEscapesCharacters]]];
     }
     
     return [parameters componentsJoinedByString:@"&"];
@@ -192,7 +195,7 @@
 
 @implementation NSString (SLTumblrTools)
 
-static NSString * const escapesCharacters = @"!*'();:@&=+$,/?%#[]%";
+static NSString * const escapesCharacters = @"!*'();:@& =+$,/?%#[]%";
 
 /// StringByAddingOAuthPercentEncoding
 - (NSString *)stringByAddingOAuthPercentEncodingWithEscapesCharacters {

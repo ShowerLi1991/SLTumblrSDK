@@ -31,39 +31,7 @@ typedef void (^SLAuthenticatorCallback)(NSURLResponse *response, id responseObje
 
 #pragma mark - xAuth验证方法
 
-+ (void)xAuthPostWithEmailAddress:(NSString *)emailAddress password:(NSString *)password callback:(SLAuthenticatorCallback)callback {
-    [[SLTumblrAuthenticator sharedSLTumblrAuthenticator] xAuthWithEmailAddress:emailAddress password:password callback:callback];
-}
-
-// xAuth验证方法
-- (void)xAuthWithEmailAddress:(NSString *)emailAddress password:(NSString *)password callback:(SLAuthenticatorCallback)callback {
-    
-    NSMutableDictionary *requestParameters = [NSMutableDictionary dictionaryWithDictionary:
-                                                  @{
-                                                        @"x_auth_username" : emailAddress,
-                                                        @"x_auth_password" : password,
-                                                        @"x_auth_mode" : @"client_auth",
-                                                        @"api_key" : [SLTumblrSDK sharedSLTumblrSDK].OAuthConsumerKey
-                                                    }];
-    
-    NSString * URLString = @"https://www.tumblr.com/oauth/access_token";
-    NSURL * URL = [NSURL URLWithString:URLString];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
-    request.HTTPMethod = @"POST";
-    request.HTTPBody = [[SLTumblrTools queryBySortedKeysWithDictionary:requestParameters.copy] dataUsingEncoding:NSUTF8StringEncoding];
-    
-    [request setValue:@"iPhone AppleWebKit" forHTTPHeaderField:@"User-Agent"];
-
-//    requestParameters[@"oauth_consumer_secret"] = [SLTumblrSDK sharedSLTumblrSDK].OAuthConsumerSecret;
-
-    
-    
-    NSString * authorization = [SLTumblrOAuth authorizationWithURLString:URLString HTTPMethod:request.HTTPMethod postDict:requestParameters.copy];
-    [request setValue:authorization forHTTPHeaderField:@"Authorization"];
-    
-    [self setRequet:request forCallback:callback];
-}
-
+// 待续
 
 
 
@@ -95,7 +63,7 @@ typedef void (^SLAuthenticatorCallback)(NSURLResponse *response, id responseObje
     request.HTTPMethod = @"POST";
     request.HTTPBody = [[[SLTumblrTools queryBySortedKeysWithDictionary:requestParameters] stringByRemovingPercentEncoding] dataUsingEncoding:NSUTF8StringEncoding];
     [request setValue:@"iPhone AppleWebKit" forHTTPHeaderField:@"User-Agent"];
-    NSString * authorization = [SLTumblrOAuth authorizationWithURLString:[URL absoluteString] HTTPMethod:request.HTTPMethod postDict:requestParameters];
+    NSString * authorization = [SLTumblrOAuth authorizationWithURLString:[URL absoluteString] HTTPMethod:request.HTTPMethod postDicts:nil authDicts:requestParameters];
     [request setValue:authorization forHTTPHeaderField:@"Authorization"];
     
     SLAuthenticatorCallback callback = ^(NSURLResponse *response, id responseObject, NSError *error){
@@ -150,7 +118,7 @@ typedef void (^SLAuthenticatorCallback)(NSURLResponse *response, id responseObje
     request.HTTPMethod = @"POST";
     request.HTTPBody = [[SLTumblrTools queryBySortedKeysWithDictionary:requestParameters] dataUsingEncoding:NSUTF8StringEncoding];
     
-    NSString * authorization = [SLTumblrOAuth authorizationWithURLString:[URL absoluteString] HTTPMethod:request.HTTPMethod postDict:requestParameters];
+    NSString * authorization = [SLTumblrOAuth authorizationWithURLString:[URL absoluteString] HTTPMethod:request.HTTPMethod postDicts:nil authDicts:requestParameters];
     [request setValue:authorization forHTTPHeaderField:@"Authorization"];
 
     [[[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {

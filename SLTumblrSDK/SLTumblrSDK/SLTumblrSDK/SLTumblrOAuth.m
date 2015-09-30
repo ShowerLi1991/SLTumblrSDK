@@ -25,21 +25,21 @@
 }
 
 
-+ (NSString *)authorizationWithURLString:(NSString *)URLString HTTPMethod:(NSString *)method postDict:(NSDictionary *)xauthParameter {
++ (NSString *)authorizationWithURLString:(NSString *)URLString HTTPMethod:(NSString *)method postDicts:(NSDictionary *)postDicts authDicts:xauthParameter {
     
-    return [[SLTumblrOAuth sharedSLTumblrOAuth] authorizationWithURLString:URLString HTTPMethod:method postDict:xauthParameter];
+    return [[SLTumblrOAuth sharedSLTumblrOAuth] authorizationWithURLString:URLString HTTPMethod:method postDicts:postDicts authDicts:xauthParameter];
     
 }
 
 
 
-- (NSString *)authorizationWithURLString:(NSString *)URLString HTTPMethod:(NSString *)method postDict:(NSDictionary *)authParameter {
+- (NSString *)authorizationWithURLString:(NSString *)URLString HTTPMethod:(NSString *)method postDicts:(NSDictionary *)postDicts authDicts:(NSDictionary *)authParameter {
     
     NSString * baseURLString = [[URLString componentsSeparatedByString:@"?"] firstObject];
-    
-    NSString * queryString = [NSURL URLWithString:[URLString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]].query;
-    
-    NSDictionary * queryParameters = [SLTumblrTools dictionaryByQueryString:queryString];
+    if ([method isEqualToString:@"GET"] && postDicts == nil) {
+        NSString * query = [URLString stringByReplacingOccurrencesOfString:[baseURLString stringByAppendingString:@"?"] withString:@""];
+        postDicts = [SLTumblrTools dictionaryByQueryString:query];
+    }
     
     
     NSMutableDictionary * headerParameters = [NSMutableDictionary dictionaryWithDictionary:
@@ -55,8 +55,8 @@
         headerParameters[@"oauth_token"] = [SLTumblrSDK sharedSLTumblrSDK].OAuthToken;
     }
     
-    NSString * baseString = [self baseStringWithMethod:method baseURLString:baseURLString headerParameters:headerParameters.copy queryParameters:queryParameters postParameters:authParameter];
-    
+    NSString * baseString = [self baseStringWithMethod:method baseURLString:baseURLString headerParameters:headerParameters.copy queryParameters:postDicts postParameters:authParameter];
+    NSLog(@"%@", baseString);
     NSString * signature = [self signatureWithBaseString:baseString consumerSecret:[SLTumblrSDK sharedSLTumblrSDK].OAuthConsumerSecret tokenSecret:[SLTumblrSDK sharedSLTumblrSDK].OAuthTokenSecret];
     
     headerParameters[@"oauth_signature"] = signature;
@@ -99,8 +99,7 @@
     }
     
     NSString * headerSortedString = [SLTumblrTools queryBySortedKeysWithDictionary:tempDictM];
-    
-    
+        
     NSString * baseString = [NSString stringWithFormat:@"%@&%@&%@",
                              method,
                              [baseURLString stringByAddingOAuthPercentEncodingWithEscapesCharacters],

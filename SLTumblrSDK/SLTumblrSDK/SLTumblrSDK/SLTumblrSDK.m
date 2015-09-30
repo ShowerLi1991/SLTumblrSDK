@@ -122,11 +122,6 @@
     [SLTumblrTools GETWithURLString:urlString parametersDict:parametersM authenticationType:OAuthType callback:callback];
 }
 
-
-
-
-
-
 #pragma mark ------------------Operation------------------------
 
 
@@ -150,28 +145,60 @@
     [SLTumblrTools POSTWithURLString:urlString parametersDict:@{ @"id" : postID, @"reblog_key" : reblogKey } callback:callback];
 }
 
+
+
+#pragma mark ------------------Posting------------------------
+
+- (NSString *)postingURLString {
+    return [NSString stringWithFormat:@"https://api.tumblr.com/v2/blog/%@.tumblr.com/post", [SLTumblrSDK sharedSLTumblrSDK].blogName];
+}
+
+- (void)textPostingWithParameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback {
+    [self creatPostWithType:@"text" parameters:parameters callback:callback];
+
+}
+
+- (void)quotePostingWithParameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback {
+    [self creatPostWithType:@"quote" parameters:parameters callback:callback];
+
+}
+
+- (void)linkPostingWithParameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback {
+    [self creatPostWithType:@"link" parameters:parameters callback:callback];
+
+}
+
+- (void)chatPostingWithParameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback {
+    [self creatPostWithType:@"chat" parameters:parameters callback:callback];
+}
+
+
+#pragma mark ------------------Posting Mgr------------------------
+
+
 - (void)creatPostWithType:(NSString *)type parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback {
-    NSString * urlString = [NSString stringWithFormat:@"https://api.tumblr.com/v2/blog/%@.tumblr.com/post", self.blogName];
+    NSString * urlString = [self postingURLString];
     NSMutableDictionary * parametersM = [NSMutableDictionary dictionaryWithDictionary:parameters];
     parametersM[@"type"] = type;
     [SLTumblrTools POSTWithURLString:urlString parametersDict:parametersM callback:callback];
 }
 
 - (void)editPostWithParameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback {
-    NSString * urlString = [NSString stringWithFormat:@"https://api.tumblr.com/v2/blog/%@.tumblr.com/post/edit", self.blogName];
+    NSString * urlString = [NSString stringWithFormat:@"%@/edit", [self postingURLString]];
     [SLTumblrTools POSTWithURLString:urlString parametersDict:parameters callback:callback];
     
 }
 
 - (void)reblogPostWithParameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback {
-    NSString * urlString = [NSString stringWithFormat:@"https://api.tumblr.com/v2/blog/%@.tumblr.com/post/reblog", self.blogName];
+    NSString * urlString = [NSString stringWithFormat:@"%@/reblog", [self postingURLString]];
     [SLTumblrTools POSTWithURLString:urlString parametersDict:parameters callback:callback];
 }
 
 - (void)deletePostWithId:(NSString *)postID callback:(SLTumblrCallback)callback {
-    NSString * urlString = [NSString stringWithFormat:@"https://api.tumblr.com/v2/blog/%@.tumblr.com/post/delete", self.blogName];
+    NSString * urlString = [NSString stringWithFormat:@"%@/delete", [self postingURLString]];
     [SLTumblrTools POSTWithURLString:urlString parametersDict:@{@"id" : postID} callback:callback];
 }
+
 
 
 @end

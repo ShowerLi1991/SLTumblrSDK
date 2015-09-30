@@ -60,20 +60,34 @@ typedef void (^SLTumblrCallback)(id result, NSError *error);
 - (void)like:(NSString *)postID reblogKey:(NSString *)reblogKey callback:(SLTumblrCallback)callback;
 - (void)unlike:(NSString *)postID reblogKey:(NSString *)reblogKey callback:(SLTumblrCallback)callback;
 
+
+#pragma mark ------------------Posting------------------------
+// Common_para: tag, source_url, date,
+
+// Use: "creatPostWithType:"
+
+// Para: title, body
+- (void)textPostingWithParameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
+// Para: quote, source
+- (void)quotePostingWithParameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
+// Para: title, url, description
+- (void)linkPostingWithParameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
+// Para: title, conversation
+- (void)chatPostingWithParameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
+
+// Use: "multipartPost"
+- (void)photoPostingWithFilePathArray:(NSArray *)filePathArrayOrNil contentTypeArray:(NSArray *)contentTypeArrayOrNil fileNameArray:(NSArray *)fileNameArrayOrNil parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
+- (void)videoPostingWithFilePath:(NSString *)filePathOrNil contentType:(NSString *)contentTypeOrNil fileName:(NSString *)fileNameOrNil parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
+- (void)audioPostingWithFilePath:(NSString *)filePathOrNil contentType:(NSString *)contentTypeOrNil fileName:(NSString *)fileNameOrNil parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
+
+
+#pragma mark ------------------Posting Mgr------------------------
+
+
 - (void)creatPostWithType:(NSString *)type parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
 - (void)editPostWithParameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
 - (void)reblogPostWithParameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
 - (void)deletePostWithId:(NSString *)postID callback:(SLTumblrCallback)callback;
-
-
-- (void)text:(NSString *)blogName parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
-- (void)quote:(NSString *)blogName parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
-- (void)link:(NSString *)blogName parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
-- (void)chat:(NSString *)blogName parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
-- (void)photo:(NSString *)blogName filePathArray:(NSArray *)filePathArrayOrNil contentTypeArray:(NSArray *)contentTypeArrayOrNil fileNameArray:(NSArray *)fileNameArrayOrNil parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
-- (void)video:(NSString *)blogName filePath:(NSString *)filePathOrNil contentType:(NSString *)contentTypeOrNil fileName:(NSString *)fileNameOrNil parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
-- (void)audio:(NSString *)blogName filePath:(NSString *)filePathOrNil contentType:(NSString *)contentTypeOrNil fileName:(NSString *)fileNameOrNil parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
-
 
 
 
