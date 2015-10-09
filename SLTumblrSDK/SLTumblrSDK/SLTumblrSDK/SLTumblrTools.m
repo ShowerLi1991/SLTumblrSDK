@@ -45,8 +45,10 @@
     [[SLTumblrTools sharedSLTumblrTools] postRequestWithURLString:URLString parametersDict:parametersDict callback:callback];
 }
 
-
-
+/// MultipartPOST
++ (void)multipartPostRequestWithURLString:(NSString *)URLString type:(NSString *)type multipartDatas:(NSArray *)datas parametersDict:(NSDictionary *)parametersDict callbakc:(SLTumblrCallback)callback {
+    [[SLTumblrTools sharedSLTumblrTools] multipartPostRequestWithURLString:URLString type:type multipartDatas:datas parametersDict:parametersDict callbakc:callback];
+}
 
 #pragma mark - -------------------分水岭----------------------
 
@@ -68,18 +70,18 @@
     [self setRequet:request forCallback:callback];
 }
 
-/// postRequest方法 url附带参数
+/// postRequest方法
 - (void)postRequestWithURLString:(NSString *)URLString parametersDict:(NSDictionary *)parametersDict callback:(SLTumblrCallback)callback {
+    
+    NSMutableDictionary * parametersDictM = [NSMutableDictionary dictionaryWithDictionary:parametersDict];
+    parametersDictM[@"api_key"] = [SLTumblrSDK sharedSLTumblrSDK].OAuthConsumerKey;
     
     NSURL *URL = [NSURL URLWithString:URLString];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
     request.HTTPMethod = @"POST";
-    
-    NSMutableDictionary * parametersDictM = [NSMutableDictionary dictionaryWithDictionary:parametersDict];
-    parametersDictM[@"api_key"] = [SLTumblrSDK sharedSLTumblrSDK].OAuthConsumerKey;
     NSString * queryString = [SLTumblrTools queryBySortedKeysWithDictionary:parametersDictM];
-    
     request.HTTPBody = [queryString dataUsingEncoding:NSUTF8StringEncoding];
+
     
     NSString * authorization = [SLTumblrOAuth authorizationWithURLString:URLString HTTPMethod:request.HTTPMethod postDicts:parametersDictM authDicts:nil];
     NSLog(@"%@", authorization);
@@ -88,6 +90,98 @@
     
     [self setRequet:request forCallback:callback];
 }
+
+/// multipartPost
+- (void)multipartPostRequestWithURLString:(NSString *)URLString type:(NSString *)type multipartDatas:(NSArray *)datas parametersDict:(NSDictionary *)parametersDict callbakc:(SLTumblrCallback)callback {
+    
+    NSMutableDictionary * parametersDictM = [NSMutableDictionary dictionaryWithDictionary:parametersDict];
+    parametersDictM[@"api_key"] = [SLTumblrSDK sharedSLTumblrSDK].OAuthConsumerKey;
+    parametersDictM[@"type"] = type;
+
+//    NSURL * URL = [NSURL URLWithString:URLString];
+//    NSMutableURLRequest * request = [NSMutableURLRequest requestWithURL:URL];
+//    request.HTTPMethod = @"POST";
+//    
+//    NSString * boundary = [NSString stringWithFormat:@"JXHTTP-%@-%@", [[NSProcessInfo processInfo] globallyUniqueString], @([[SLTumblrTools timestamp] integerValue])];
+//    NSString * contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@", boundary];
+//    [request setValue:contentType forHTTPHeaderField:@"Content-Type"];
+//    
+//    NSMutableData * body = [NSMutableData data];
+//    
+//    for (NSString * key in [parametersDictM allKeys]) {
+//        [body appendData:[self formDataWithData:[parametersDictM[key] dataUsingEncoding:NSUTF8StringEncoding] name:key filename:nil contentType:@"text/plain; charset=utf-8" boundary:boundary]];
+//    }
+//    
+//    [datas enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+//        NSString * name = [datas count] > 1 ? [NSString stringWithFormat:@"data[%li]", idx] : @"data";
+//        [body appendData:[self formDataWithData:obj name:name filename:[NSString stringWithFormat:@"%li.jpg", idx] contentType:@"text/plain; charset=utf-8" boundary:boundary]];
+//    }];
+//    
+//    NSString * tail = [NSString stringWithFormat:@"--%@--", boundary];
+//    [body appendData:[tail dataUsingEncoding:NSUTF8StringEncoding]];
+//    
+//    request.HTTPBody = body;
+
+    
+    NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@"POST" URLString:URLString parameters:parametersDictM constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+        
+
+        [datas enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSString * name = [datas count] > 1? [NSString stringWithFormat:@"data[%li]", idx] : @"data";
+            [formData appendPartWithFileData:obj name:name fileName:[SLTumblrTools nonce] mimeType:@"text/plain; charset=utf-8"];
+        }];
+
+    } error:nil];
+
+
+    NSString * authorization = [SLTumblrOAuth authorizationWithURLString:URLString HTTPMethod:request.HTTPMethod postDicts:parametersDictM authDicts:nil];
+    NSLog(@"%@", authorization);
+    [request setValue:authorization forHTTPHeaderField:@"Authorization"];
+    [request setValue:@"iPhone AppleWebKit" forHTTPHeaderField:@"User-Agent"];
+
+    AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    NSProgress *progress = nil;
+    
+    NSURLSessionUploadTask *uploadTask = [manager uploadTaskWithStreamedRequest:request progress:&progress completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
+        if (error) {
+            callback(responseObject, error);
+        } else {
+            if ([responseObject[@"meta"][@"status"] integerValue]/100 == 2) {
+                callback(responseObject[@"response"], error);
+            } else {
+                callback(error, responseObject);
+            }
+        }
+    }];
+    
+    [uploadTask resume];
+    
+}
+
+
+
+
+- (NSData *)formDataWithData:(NSData *)data name:(NSString *)name filename:(NSString *)filename contentType:(NSString *)contentType boundary:(NSString *)boundary {
+   
+    NSMutableData * dataM = [NSMutableData data];
+    NSMutableString * stringM = [NSMutableString string];
+    
+    [stringM appendFormat:@"--%@\r\r", boundary];
+    [stringM appendFormat:@"Content-Disposition: form-data; name=\"%@\"", name];
+    if (filename != nil) {
+        [stringM appendFormat:@"; filename=\"%@\"", filename];
+    }
+    [stringM appendFormat:@"\r\nContent-Type: %@\r\n\r\n", contentType];
+    [dataM appendData:[stringM dataUsingEncoding:NSUTF8StringEncoding]];
+    [stringM setString:@""];
+    [dataM appendData:data];
+    [dataM appendData:[@"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    return dataM.copy;
+}
+
+
+
 
 - (void)setRequet:(NSMutableURLRequest *)request forCallback:(SLTumblrCallback)callback {
     NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];

@@ -16,6 +16,8 @@ typedef NS_OPTIONS(NSUInteger, AuthenticationType) {
 
 @interface SLTumblrTools : NSObject
 
+
+
 + (instancetype)sharedSLTumblrTools;
 
 /// 查询字段转字典(query to dict), 字典不排序
@@ -38,6 +40,7 @@ typedef NS_OPTIONS(NSUInteger, AuthenticationType) {
 /// POST访问方法
 + (void)POSTWithURLString:(NSString *)URLString parametersDict:(NSDictionary *)parametersDict callback:(SLTumblrCallback)callback;
 
++ (void)multipartPostRequestWithURLString:(NSString *)URLString type:(NSString *)type multipartDatas:(NSArray *)datas parametersDict:(NSDictionary *)parametersDict callbakc:(SLTumblrCallback)callback;
 
 @end
 

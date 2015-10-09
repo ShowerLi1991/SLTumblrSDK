@@ -172,6 +172,21 @@
     [self creatPostWithType:@"chat" parameters:parameters callback:callback];
 }
 
+- (void)photoPostingWithImageArray:(NSArray *)imageArray parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback {
+    NSMutableArray * datas = [NSMutableArray array];
+    for (UIImage * image in imageArray) {
+        [datas addObject:UIImagePNGRepresentation(image)];
+    }
+    [SLTumblrTools multipartPostRequestWithURLString:[self postingURLString] type:@"photo" multipartDatas:datas parametersDict:parameters callbakc:callback];
+}
+
+- (void)videoPostingWithVideoData:(NSData *)videoData parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback {
+    [SLTumblrTools multipartPostRequestWithURLString:[self postingURLString] type:@"video" multipartDatas:@[videoData] parametersDict:parameters callbakc:callback];
+}
+
+- (void)audioPostingWithAudioData:(NSData *)audioData parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback {    [SLTumblrTools multipartPostRequestWithURLString:[self postingURLString] type:@"audio" multipartDatas:@[audioData] parametersDict:parameters callbakc:callback];
+}
+
 
 #pragma mark ------------------Posting Mgr------------------------
 

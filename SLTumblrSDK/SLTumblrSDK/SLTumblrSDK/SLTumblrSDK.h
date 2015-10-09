@@ -76,8 +76,12 @@ typedef void (^SLTumblrCallback)(id result, NSError *error);
 - (void)chatPostingWithParameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
 
 // Use: "multipartPost"
-- (void)photoPostingWithFilePathArray:(NSArray *)filePathArrayOrNil contentTypeArray:(NSArray *)contentTypeArrayOrNil fileNameArray:(NSArray *)fileNameArrayOrNil parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
-- (void)videoPostingWithFilePath:(NSString *)filePathOrNil contentType:(NSString *)contentTypeOrNil fileName:(NSString *)fileNameOrNil parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
+
+// Para: caption
+- (void)photoPostingWithImageArray:(NSArray *)imageArray parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
+// Data: Mov; Para:
+- (void)videoPostingWithVideoData:(NSData *)videoData parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
+// Data: ; Para:
 - (void)audioPostingWithFilePath:(NSString *)filePathOrNil contentType:(NSString *)contentTypeOrNil fileName:(NSString *)fileNameOrNil parameters:(NSDictionary *)parameters callback:(SLTumblrCallback)callback;
 
 
